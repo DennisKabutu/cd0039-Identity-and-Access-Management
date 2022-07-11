@@ -96,7 +96,7 @@ def add_drinks():
         abort(422)   
   
     return jsonify({
-        'message': 'success',
+        'success':True,
         'recipe':drink.long(),
     })
     
@@ -113,28 +113,24 @@ def add_drinks():
 '''
 @app.route('/drinks/<int:drink_id>',methods = ['PATCH'])
 def update_drinks(drink_id):
+    request_body = request.get_json()
+    title = request_body.get('title',None)
+    recipe = request_body.get('recipe',None)
+    if not title and recipe:
+        abort(403)
+    recipe_json = json.dumps(recipe)
     try:
-        body = request.get_json()
-        if not body:
-            abort(403)
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
+        drink.title = title,
+        drink.recipe = recipe_json
 
-        drink = Drink.query.filter_by(Drink.id == drink_id).one_or_none()
-
-        if not drink:
-            abort(404)
-
-        if body['title'] and body['recipe']:
-            drink.title = body.title
-            drink.recipe = json.dump(body['recipe'])
-        
-        return jsonify({
-            'success':True,
-            'drinks':drink.long(),
-
-        },200)
     except:
         abort(422)
-        
+    
+    return jsonify({
+            'success':True,
+            'drink':drink.long()
+        })       
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
