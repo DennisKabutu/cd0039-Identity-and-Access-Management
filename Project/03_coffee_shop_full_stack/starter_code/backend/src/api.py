@@ -1,4 +1,4 @@
-from crypt import methods
+#from crypt import methods
 import os
 from flask import Flask, request, jsonify, abort
 from sqlalchemy import exc
@@ -79,25 +79,27 @@ def get_drinks_detail():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the newly created drink
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks',methods=['POST'])
-def create_drinks():
-    try:
-        request = request.get_json()
-        drinks = Drink.query.all()
-        if request:
-            title = request['title']
-            recipe = json.dumps(request['recipe'])
-            drink = Drink(title, recipe)
-            drink.insert()
-            return jsonify({
-                'success':True,
-                'drinks':drink.long()
-            })
-        else:
-            abort(403)
-    except:
-        abort(422)
+@app.route("/drinks", methods=['POST'])
+#@requires_auth("post:drinks")
+def add_drinks():
+    request_body = request.get_json()
+    title = request_body.get('title',None)
+    recipe = request_body.get('recipe',None)
 
+    if not title and recipe:
+        abort(403)
+    recipe_json = json.dumps(recipe)
+    try:
+        drink = Drink(title = title, recipe = recipe_json)
+        drink.insert()
+    except:
+        abort(422)   
+  
+    return jsonify({
+        'message': 'success',
+        'recipe':drink.long(),
+    })
+    
 '''
 @TODO implement endpoint
     PATCH /drinks/<id>
@@ -109,20 +111,18 @@ def create_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks/<drink_id:int>',methods = ['PATCH'])
+@app.route('/drinks/<int:drink_id>',methods = ['PATCH'])
 def update_drinks(drink_id):
     try:
         body = request.get_json()
         if not body:
             abort(403)
 
-        drink = Drink.query.filter_by(id == drink_id).one_or_none()
+        drink = Drink.query.filter_by(Drink.id == drink_id).one_or_none()
 
         if not drink:
             abort(404)
-        
-        title = request
-        
+
         if body['title'] and body['recipe']:
             drink.title = body.title
             drink.recipe = json.dump(body['recipe'])
@@ -135,15 +135,6 @@ def update_drinks(drink_id):
     except:
         abort(422)
         
-
-
-
-
-    
-
-
-
-
 '''
 @TODO implement endpoint
     DELETE /drinks/<id>
@@ -154,7 +145,7 @@ def update_drinks(drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-@app.route('/drinks/<drink_id:int>',methods = ['DELETE'])
+@app.route('/drinks/<int:drink_id>',methods = ['DELETE'])
 def delete_drink(drink_id):
     try:
         drink = Drink.query.filter_by(id==drink_id).one_or_none()
@@ -170,8 +161,6 @@ def delete_drink(drink_id):
         abort(422)
 
         
-    pass
-
 
 # Error Handling
 '''
