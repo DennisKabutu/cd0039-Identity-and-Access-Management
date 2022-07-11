@@ -101,7 +101,6 @@ def add_drinks():
     })
     
 '''
-@TODO implement endpoint
     PATCH /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -132,7 +131,6 @@ def update_drinks(drink_id):
             'drink':drink.long()
         })       
 '''
-@TODO implement endpoint
     DELETE /drinks/<id>
         where <id> is the existing model id
         it should respond with a 404 error if <id> is not found
@@ -144,10 +142,9 @@ def update_drinks(drink_id):
 @app.route('/drinks/<int:drink_id>',methods = ['DELETE'])
 def delete_drink(drink_id):
     try:
-        drink = Drink.query.filter_by(id==drink_id).one_or_none()
+        drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
         if not drink:
-            abort(404)
-        
+            abort(404) 
         drink.delete()
         return jsonify({
             'success':True,
@@ -156,13 +153,7 @@ def delete_drink(drink_id):
     except:
         abort(422)
 
-        
-
 # Error Handling
-'''
-Example error handling for unprocessable entity
-'''
-
 
 @app.errorhandler(422)
 def unprocessable(error):
