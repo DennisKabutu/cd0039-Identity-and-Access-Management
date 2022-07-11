@@ -12,17 +12,11 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-'''
-@TODO uncomment the following line to initialize the datbase
-!! NOTE THIS WILL DROP ALL RECORDS AND START YOUR DB FROM SCRATCH
-!! NOTE THIS MUST BE UNCOMMENTED ON FIRST RUN
-!! Running this funciton will add one
-'''
 db_drop_and_create_all()
 
 # ROUTES
 '''
-@TODO implement endpoint
+implement endpoint
     GET /drinks
         it should be a public endpoint
         it should contain only the drink.short() data representation
@@ -46,10 +40,8 @@ def get_drinks():
          })
     except:
         abort(422)
-
-
 '''
-@TODO implement endpoint
+implement endpoint
     GET /drinks-detail
         it should require the 'get:drinks-detail' permission
         it should contain the drink.long() data representation
@@ -71,7 +63,7 @@ def get_drinks_detail():
         abort(422)
 
 '''
-@TODO implement endpoint
+implement endpoint
     POST /drinks
         it should create a new row in the drinks table
         it should require the 'post:drinks' permission
@@ -183,6 +175,6 @@ def bad_request(error):
         "message": "Bad request"
     }), 
 '''
-@TODO implement error handler for AuthError
-    error handler should conform to general task above
+ implement error handler for AuthError
+error handler should conform to general task above
 '''
