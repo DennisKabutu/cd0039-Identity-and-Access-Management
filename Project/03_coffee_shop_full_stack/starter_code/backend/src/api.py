@@ -6,7 +6,7 @@ import json
 from flask_cors import CORS
 
 from .database.models import db_drop_and_create_all, setup_db, Drink
-from .auth.auth import AuthError, requires_auth
+from .auth.auth import AuthError, get_token_auth_header, requires_auth
 
 app = Flask(__name__)
 setup_db(app)
@@ -24,6 +24,7 @@ implement endpoint
         or appropriate status code indicating reason for failure
 
 '''
+@requires_auth('get:drinks')
 @app.route('/drinks',methods = ['GET'])
 def get_drinks():
     try:
@@ -48,6 +49,7 @@ implement endpoint
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
+@requires_auth('get:drinks-detail')
 @app.route('/drinks-detail', methods=['GET'])
 def get_drinks_detail():
     try:
@@ -72,7 +74,7 @@ implement endpoint
         or appropriate status code indicating reason for failure
 '''
 @app.route("/drinks", methods=['POST'])
-#@requires_auth("post:drinks")
+@requires_auth('post:drinks')
 def add_drinks():
     request_body = request.get_json()
     title = request_body.get('title',None)
@@ -102,6 +104,7 @@ def add_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
+@requires_auth('patch:drinks')
 @app.route('/drinks/<int:drink_id>',methods = ['PATCH'])
 def update_drinks(drink_id):
     request_body = request.get_json()
@@ -131,6 +134,7 @@ def update_drinks(drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+@requires_auth('delete:drinks' )
 @app.route('/drinks/<int:drink_id>',methods = ['DELETE'])
 def delete_drink(drink_id):
     try:
@@ -178,3 +182,15 @@ def bad_request(error):
  implement error handler for AuthError
 error handler should conform to general task above
 '''
+@app.errorhandler(AuthError)
+def auth_error(error):
+    return jsonify({
+        'success': False,
+        'error': error.status_code,
+        'message': error.error['description']
+    }), error.status_code
+
+
+
+
+
