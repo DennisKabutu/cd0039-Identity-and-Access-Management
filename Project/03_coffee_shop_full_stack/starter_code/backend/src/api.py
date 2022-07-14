@@ -12,7 +12,7 @@ app = Flask(__name__)
 setup_db(app)
 CORS(app)
 
-db_drop_and_create_all()
+
 
 # ROUTES
 '''
@@ -24,7 +24,7 @@ implement endpoint
         or appropriate status code indicating reason for failure
 
 '''
-@requires_auth('get:drinks')
+
 @app.route('/drinks',methods = ['GET'])
 def get_drinks():
     try:
@@ -49,19 +49,22 @@ implement endpoint
     returns status code 200 and json {"success": True, "drinks": drinks} where drinks is the list of drinks
         or appropriate status code indicating reason for failure
 '''
-@requires_auth('get:drinks-detail')
 @app.route('/drinks-detail', methods=['GET'])
-def get_drinks_detail():
-    try:
-        all_drinks_detail = Drink.query.all()
-        if not all_drinks_detail:
+@requires_auth('get:drinks-detail')
+def get_drinks_detail(payload):
+   try:
+        # Query all drinks
+        all_drinks = Drink.query.all()
+        #if all_drinks is empty throw 404
+        if not all_drinks:
             abort(404)
-        drinks = [drink.long() for drink in all_drinks_detail]
+        #
+        drinks = [drink.long() for drink in all_drinks]
         return jsonify({
             'success':True,
-            'drinks':drinks           
-        })
-    except:
+            'drinks':drinks
+         })
+   except:
         abort(422)
 
 '''
@@ -75,7 +78,7 @@ implement endpoint
 '''
 @app.route("/drinks", methods=['POST'])
 @requires_auth('post:drinks')
-def add_drinks():
+def add_drinks(payload):
     request_body = request.get_json()
     title = request_body.get('title',None)
     recipe = request_body.get('recipe',None)
@@ -104,9 +107,10 @@ def add_drinks():
     returns status code 200 and json {"success": True, "drinks": drink} where drink an array containing only the updated drink
         or appropriate status code indicating reason for failure
 '''
-@requires_auth('patch:drinks')
+
 @app.route('/drinks/<int:drink_id>',methods = ['PATCH'])
-def update_drinks(drink_id):
+@requires_auth('patch:drinks')
+def update_drinks(payload,drink_id):
     request_body = request.get_json()
     title = request_body.get('title',None)
     recipe = request_body.get('recipe',None)
@@ -117,14 +121,13 @@ def update_drinks(drink_id):
         drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
         drink.title = title,
         drink.recipe = recipe_json
-
-    except:
-        abort(422)
-    
-    return jsonify({
+        updated_drinks = [drink.long()]
+        return jsonify({
             'success':True,
-            'drink':drink.long()
-        })       
+            'drinks':update_drinks
+        })  
+    except:
+        abort(422)     
 '''
     DELETE /drinks/<id>
         where <id> is the existing model id
@@ -134,9 +137,10 @@ def update_drinks(drink_id):
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
-@requires_auth('delete:drinks' )
+
 @app.route('/drinks/<int:drink_id>',methods = ['DELETE'])
-def delete_drink(drink_id):
+@requires_auth('delete:drinks' )
+def delete_drink(payload,drink_id):
     try:
         drink = Drink.query.filter(Drink.id == drink_id).one_or_none()
         if not drink:
